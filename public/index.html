@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whizpoint Solutions - Services</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <div class="container mx-auto px-4 py-8 pb-32">
+        <header class="mb-12">
+            <h1 class="text-4xl font-bold">Whizpoint Solutions</h1>
+            <p class="text-gray-400">Select a service to get started</p>
+        </header>
+
+        <!-- Bento Grid Services -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12" id="services-grid">
+            <!-- Services will be injected here -->
+        </div>
+
+        <!-- Cart Section -->
+        <div id="cart-section" class="hidden fixed bottom-0 right-0 left-0 md:left-auto m-4 md:m-8 bg-gray-800 p-6 rounded-lg shadow-xl w-full md:w-80 border border-gray-700 z-50">
+            <h2 class="text-xl font-bold mb-4">Your Cart</h2>
+            <div id="cart-items" class="mb-4 max-h-48 overflow-y-auto"></div>
+            <div class="flex justify-between font-bold mb-4 pt-4 border-t border-gray-700">
+                <span>Total:</span>
+                <span id="cart-total">KES 0</span>
+            </div>
+            <button id="checkout-btn" class="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded font-bold transition">Proceed to Checkout</button>
+        </div>
+
+        <!-- Checkout Modal -->
+        <div id="checkout-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden flex items-center justify-center p-4 z-[100]">
+            <div class="bg-gray-800 rounded-xl p-8 max-w-md w-full border border-gray-700">
+                <h2 class="text-2xl font-bold mb-6">Multi-Provider Checkout</h2>
+                <div class="space-y-4">
+                    <button id="mpesa-btn" class="w-full flex items-center justify-between bg-green-600 hover:bg-green-700 p-4 rounded-lg transition">
+                        <span class="font-bold text-lg text-white">M-Pesa</span>
+                        <span class="bg-white text-green-600 px-2 py-1 rounded text-xs font-bold">ACTIVE</span>
+                    </button>
+                    <button class="w-full flex items-center justify-between bg-gray-700 cursor-not-allowed p-4 rounded-lg opacity-50">
+                        <span class="font-bold text-lg text-gray-300">Airtel Money</span>
+                        <span class="bg-yellow-500 text-black px-2 py-1 rounded text-xs font-bold">COMING SOON</span>
+                    </button>
+                    <button class="w-full flex items-center justify-between bg-gray-700 cursor-not-allowed p-4 rounded-lg opacity-50">
+                        <span class="font-bold text-lg text-gray-300">T-Kash</span>
+                        <span class="bg-yellow-500 text-black px-2 py-1 rounded text-xs font-bold">COMING SOON</span>
+                    </button>
+                </div>
+                <button id="close-checkout" class="mt-6 text-gray-400 hover:text-white w-full text-center">Cancel</button>
+            </div>
+        </div>
+
+        <!-- M-Pesa Input Modal -->
+        <div id="mpesa-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden flex items-center justify-center p-4 z-[110]">
+            <div class="bg-gray-800 rounded-xl p-8 max-w-md w-full border border-gray-700">
+                <h2 class="text-2xl font-bold mb-6 text-green-500">M-Pesa Payment</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Full Name</label>
+                        <input type="text" id="user-name" class="w-full bg-gray-700 rounded p-2 focus:ring-2 focus:ring-green-500 outline-none text-white border border-gray-600" placeholder="John Doe">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Phone Number</label>
+                        <input type="text" id="phone-number" class="w-full bg-gray-700 rounded p-2 focus:ring-2 focus:ring-green-500 outline-none text-white border border-gray-600" placeholder="07... or 7... or 254...">
+                        <p id="formatted-number" class="text-xs text-green-500 mt-1 h-4"></p>
+                    </div>
+                    <button id="pay-now-btn" class="w-full bg-green-600 hover:bg-green-700 py-3 rounded-lg font-bold text-lg transition">Pay Now</button>
+                </div>
+                <button id="close-mpesa" class="mt-6 text-gray-400 hover:text-white w-full text-center">Back</button>
+            </div>
+        </div>
+
+        <!-- Transaction Status Modal -->
+        <div id="status-modal" class="fixed inset-0 bg-black bg-opacity-80 hidden flex items-center justify-center p-4 z-[120]">
+            <div class="bg-gray-800 rounded-xl p-8 max-w-md w-full text-center border border-gray-700">
+                <div id="status-loading" class="hidden">
+                    <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                    <h2 class="text-xl font-bold">Processing Transaction</h2>
+                    <p class="text-gray-400 mt-2">Check your phone for the M-Pesa PIN prompt</p>
+                </div>
+                <div id="status-success" class="hidden">
+                    <div class="bg-green-500 text-white rounded-full h-16 w-16 flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-green-500">Payment Successful!</h2>
+                    <p class="text-gray-400 mt-2">M-Pesa Receipt Number:</p>
+                    <p id="receipt-number" class="font-mono text-xl text-white mt-1 bg-gray-700 py-1 px-4 rounded inline-block"></p>
+                    <button onclick="location.reload()" class="mt-8 w-full bg-green-600 hover:bg-green-700 py-2 rounded-lg font-bold transition">Back to Home</button>
+                </div>
+                <div id="status-cancelled" class="hidden">
+                    <div class="bg-yellow-500 text-white rounded-full h-16 w-16 flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-yellow-500">Transaction Cancelled</h2>
+                    <p class="text-gray-400 mt-2">Transaction Cancelled by User.</p>
+                    <button onclick="closeStatus()" class="mt-8 w-full bg-gray-700 hover:bg-gray-600 py-2 rounded-lg font-bold transition">Try Again</button>
+                </div>
+                <div id="status-failed" class="hidden">
+                    <div class="bg-red-500 text-white rounded-full h-16 w-16 flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-red-500">Transaction Failed</h2>
+                    <p id="fail-message" class="text-gray-400 mt-2"></p>
+                    <button onclick="closeStatus()" class="mt-8 w-full bg-gray-700 hover:bg-gray-600 py-2 rounded-lg font-bold transition">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

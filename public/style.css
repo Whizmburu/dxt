@@ -1,0 +1,44 @@
+/* Custom styles to complement Tailwind */
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Bento Grid Item Hover Effect */
+#services-grid > div {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#services-grid > div:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.2);
+}
+
+/* Cart Item Scrollbar */
+#cart-items::-webkit-scrollbar {
+    width: 4px;
+}
+
+#cart-items::-webkit-scrollbar-track {
+    background: #374151;
+}
+
+#cart-items::-webkit-scrollbar-thumb {
+    background: #4b5563;
+    border-radius: 2px;
+}
+
+/* Status Modal Spinner Customization */
+.animate-spin {
+    border-right-color: transparent;
+}
+
+/* Form Input Focus */
+input:focus {
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+}
+
+/* Button Active State */
+button:active {
+    transform: scale(0.98);
+}
