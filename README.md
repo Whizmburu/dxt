@@ -102,7 +102,7 @@ If the app stays on "Processing Transaction" and then shows a timeout error:
 1. **Check Server Logs**: Ensure the backend received the callback from M-Pesa. You should see `--- M-Pesa Callback Received ---` in your terminal.
 2. **Check Ngrok**: Ensure your Ngrok tunnel is still active and the URL matches what's logged in the terminal.
 3. **M-Pesa Sandbox Delay**: M-Pesa Sandbox can sometimes be slow or fail to send callbacks. Try again after a few minutes.
-4. **Socket.io Connection**: Open your browser's Developer Tools (F12) and check the Console. You should see `Connected to server via WebSockets`. If there's a connection error, the frontend won't receive the status update.
+4. **Socket.io Connection**: Check the **Connection Status** indicator in the top-right corner of the web app. It should be green and say "Connected". If it says "Disconnected" or "Connection Error", the frontend won't receive the status update. Open your browser's Developer Tools (F12) and check the Console for more details.
 
 ### "Invalid Access Token" or "404" Errors
 1. Double-check your `MPESA_CONSUMER_KEY` and `MPESA_CONSUMER_SECRET` in the `.env` file.

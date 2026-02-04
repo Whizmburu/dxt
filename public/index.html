@@ -9,9 +9,15 @@
 </head>
 <body class="bg-gray-900 text-white min-h-screen">
     <div class="container mx-auto px-4 py-8 pb-32">
-        <header class="mb-12">
-            <h1 class="text-4xl font-bold">Whizpoint Solutions</h1>
-            <p class="text-gray-400">Select a service to get started</p>
+        <header class="mb-12 flex justify-between items-start">
+            <div>
+                <h1 class="text-4xl font-bold">Whizpoint Solutions</h1>
+                <p class="text-gray-400">Select a service to get started</p>
+            </div>
+            <div class="flex items-center space-x-2 bg-gray-800 px-3 py-1 rounded-full border border-gray-700">
+                <div id="connection-dot" class="w-2 h-2 rounded-full bg-red-500"></div>
+                <span id="connection-text" class="text-xs font-bold text-gray-400">Disconnected</span>
+            </div>
         </header>
 
         <!-- Bento Grid Services -->
@@ -79,6 +85,7 @@
                     <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
                     <h2 class="text-xl font-bold">Processing Transaction</h2>
                     <p class="text-gray-400 mt-2">Check your phone for the M-Pesa PIN prompt</p>
+                    <button id="cancel-loading" class="mt-6 text-gray-500 hover:text-gray-300 text-sm underline">Cancel & Close</button>
                 </div>
                 <div id="status-success" class="hidden">
                     <div class="bg-green-500 text-white rounded-full h-16 w-16 flex items-center justify-center mx-auto mb-4">

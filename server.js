@@ -21,9 +21,9 @@ app.use(express.static('public'));
 const PORT = process.env.PORT || 3000;
 
 io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id);
-  socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
+  console.log(`[Socket] Client connected: ${socket.id}`);
+  socket.on('disconnect', (reason) => {
+    console.log(`[Socket] Client disconnected: ${socket.id} (${reason})`);
   });
 });
 
@@ -54,9 +54,11 @@ const getAccessToken = async () => {
 
 app.post('/api/stkpush', async (req, res) => {
   const { phoneNumber, amount } = req.body;
+  console.log(`[STK Push] Initiation requested for ${phoneNumber} (Amount: ${amount})`);
 
   try {
     const token = await getAccessToken();
+    console.log('[STK Push] OAuth token generated successfully');
     const url = `${getBaseUrl()}/mpesa/stkpush/v1/processrequest`;
     const timestamp = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14);
     const password = Buffer.from(`${process.env.MPESA_SHORTCODE}${process.env.MPESA_PASSKEY}${timestamp}`).toString('base64');
@@ -80,15 +82,18 @@ app.post('/api/stkpush', async (req, res) => {
       TransactionDesc: 'Payment for services',
     };
 
+    console.log('[STK Push] Sending request to Daraja API...');
     const response = await axios.post(url, data, {
       headers: {
         Authorization: `Bearer ${token.trim()}`,
       },
     });
+    console.log('[STK Push] Daraja Response:', JSON.stringify(response.data, null, 2));
     res.status(200).json(response.data);
   } catch (error) {
-    console.error('STK Push error:', JSON.stringify(error.response ? error.response.data : error.message, null, 2));
-    res.status(500).json({ error: error.response ? error.response.data : error.message });
+    const errorData = error.response ? error.response.data : error.message;
+    console.error('[STK Push] Error:', JSON.stringify(errorData, null, 2));
+    res.status(500).json({ error: errorData });
   }
 });
 

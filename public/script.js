@@ -124,13 +124,27 @@ phoneNumberInput.oninput = (e) => {
 
 // Socket.io and Payment Logic
 const socket = io();
+const connectionDot = document.getElementById('connection-dot');
+const connectionText = document.getElementById('connection-text');
 
 socket.on('connect', () => {
-    console.log('Connected to server via WebSockets');
+    console.log('Connected to server via WebSockets. ID:', socket.id);
+    connectionDot.classList.replace('bg-red-500', 'bg-green-500');
+    connectionText.innerText = 'Connected';
+    connectionText.classList.replace('text-gray-400', 'text-green-500');
+});
+
+socket.on('disconnect', () => {
+    console.warn('Disconnected from server');
+    connectionDot.classList.replace('bg-green-500', 'bg-red-500');
+    connectionText.innerText = 'Disconnected';
+    connectionText.classList.replace('text-green-500', 'text-gray-400');
 });
 
 socket.on('connect_error', (error) => {
     console.error('Socket.io Connection Error:', error);
+    connectionDot.classList.replace('bg-green-500', 'bg-red-500');
+    connectionText.innerText = 'Connection Error';
 });
 
 const statusModal = document.getElementById('status-modal');
@@ -140,6 +154,7 @@ const statusCancelled = document.getElementById('status-cancelled');
 const statusFailed = document.getElementById('status-failed');
 const receiptNumberDisplay = document.getElementById('receipt-number');
 const failMessageDisplay = document.getElementById('fail-message');
+const cancelLoadingBtn = document.getElementById('cancel-loading');
 
 let currentCheckoutRequestID = null;
 let statusTimeout = null;
@@ -214,6 +229,12 @@ function showStatus(state, message = '') {
 
 window.closeStatus = () => {
     statusModal.classList.add('hidden');
+    clearTimeout(statusTimeout);
+};
+
+cancelLoadingBtn.onclick = () => {
+    closeStatus();
+    console.log('User manually closed the loading modal.');
 };
 
 socket.on('transaction-update', (data) => {
