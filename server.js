@@ -99,10 +99,11 @@ app.post('/api/stkpush', async (req, res) => {
 
 app.post('/api/callback', (req, res) => {
   try {
-    const { Body } = req.body;
-    console.log('--- M-Pesa Callback Received ---');
-    console.log(JSON.stringify(req.body, null, 2));
+    console.log(`\n--- [${new Date().toISOString()}] M-Pesa Callback Received ---`);
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
+    console.log('Body:', JSON.stringify(req.body, null, 2));
 
+    const { Body } = req.body;
     if (!Body || !Body.stkCallback) {
       console.error('Invalid callback body structure');
       return res.status(400).json({ ResultCode: 1, ResultDesc: 'Invalid body' });
@@ -158,7 +159,9 @@ server.listen(PORT, async () => {
       const session = await new ngrok.SessionBuilder()
         .authtoken(process.env.NGROK_AUTHTOKEN.trim())
         .connect();
-      const tunnel = await session.httpEndpoint().listen();
+      const tunnel = await session.httpEndpoint()
+        .forward(`localhost:${PORT}`)
+        .listen();
       const url = tunnel.url();
       console.log(`Ngrok Tunnel: ${url}`);
       process.env.CALLBACK_URL = url;
