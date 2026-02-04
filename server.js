@@ -93,34 +93,50 @@ app.post('/api/stkpush', async (req, res) => {
 });
 
 app.post('/api/callback', (req, res) => {
-  const { Body } = req.body;
-  console.log('Callback received:', JSON.stringify(req.body, null, 2));
+  try {
+    const { Body } = req.body;
+    console.log('--- M-Pesa Callback Received ---');
+    console.log(JSON.stringify(req.body, null, 2));
 
-  const stkCallback = Body.stkCallback;
-  const resultCode = stkCallback.ResultCode;
-  const checkoutRequestID = stkCallback.CheckoutRequestID;
+    if (!Body || !Body.stkCallback) {
+      console.error('Invalid callback body structure');
+      return res.status(400).json({ ResultCode: 1, ResultDesc: 'Invalid body' });
+    }
 
-  let status = 'failed';
-  let message = stkCallback.ResultDesc;
-  let receiptNumber = null;
+    const stkCallback = Body.stkCallback;
+    const resultCode = stkCallback.ResultCode;
+    const checkoutRequestID = stkCallback.CheckoutRequestID;
 
-  if (resultCode === 0) {
-    status = 'success';
-    const callbackMetadata = stkCallback.CallbackMetadata.Item;
-    receiptNumber = callbackMetadata.find(item => item.Name === 'MpesaReceiptNumber').Value;
-  } else if (resultCode === 1032) {
-    status = 'cancelled';
-    message = 'Transaction Cancelled by User.';
+    let status = 'failed';
+    let message = stkCallback.ResultDesc;
+    let receiptNumber = null;
+
+    if (resultCode === 0) {
+      status = 'success';
+      if (stkCallback.CallbackMetadata && stkCallback.CallbackMetadata.Item) {
+        const callbackMetadata = stkCallback.CallbackMetadata.Item;
+        const receiptItem = callbackMetadata.find(item => item.Name === 'MpesaReceiptNumber');
+        receiptNumber = receiptItem ? receiptItem.Value : 'N/A';
+      }
+    } else if (resultCode === 1032) {
+      status = 'cancelled';
+      message = 'Transaction Cancelled by User.';
+    }
+
+    console.log(`Broadcasting update: ${status} for ID: ${checkoutRequestID}`);
+
+    io.emit('transaction-update', {
+      checkoutRequestID,
+      status,
+      message,
+      receiptNumber
+    });
+
+    res.status(200).json({ ResultCode: 0, ResultDesc: 'Success' });
+  } catch (error) {
+    console.error('Error processing callback:', error);
+    res.status(500).json({ ResultCode: 1, ResultDesc: 'Internal Server Error' });
   }
-
-  io.emit('transaction-update', {
-    checkoutRequestID,
-    status,
-    message,
-    receiptNumber
-  });
-
-  res.status(200).json({ ResultCode: 0, ResultDesc: 'Success' });
 });
 
 app.get('/health', (req, res) => {
@@ -128,20 +144,29 @@ app.get('/health', (req, res) => {
 });
 
 server.listen(PORT, async () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`\n--- Whizpoint Solutions Backend ---`);
+  console.log(`Local Server: http://localhost:${PORT}`);
 
   if (process.env.NGROK_AUTHTOKEN) {
     try {
+      console.log('Establishing Ngrok tunnel...');
       const session = await new ngrok.SessionBuilder()
-        .authtoken(process.env.NGROK_AUTHTOKEN)
+        .authtoken(process.env.NGROK_AUTHTOKEN.trim())
         .connect();
       const tunnel = await session.httpEndpoint().listen();
-      console.log(`Ngrok tunnel established at: ${tunnel.url()}`);
-      process.env.CALLBACK_URL = tunnel.url();
+      const url = tunnel.url();
+      console.log(`Ngrok Tunnel: ${url}`);
+      process.env.CALLBACK_URL = url;
+      console.log(`M-Pesa CallBackURL: ${url}/api/callback`);
     } catch (error) {
-      console.error('Error starting Ngrok:', error);
+      console.error('Error starting Ngrok:', error.message);
     }
   } else {
     console.log('NGROK_AUTHTOKEN not found, skipping Ngrok tunnel creation.');
+    if (process.env.CALLBACK_URL) {
+      console.log(`Using existing CALLBACK_URL: ${process.env.CALLBACK_URL}`);
+    } else {
+      console.warn('WARNING: No CALLBACK_URL set. STK Push will fail unless CALLBACK_URL is provided in .env');
+    }
   }
 });

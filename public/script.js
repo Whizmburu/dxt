@@ -124,6 +124,15 @@ phoneNumberInput.oninput = (e) => {
 
 // Socket.io and Payment Logic
 const socket = io();
+
+socket.on('connect', () => {
+    console.log('Connected to server via WebSockets');
+});
+
+socket.on('connect_error', (error) => {
+    console.error('Socket.io Connection Error:', error);
+});
+
 const statusModal = document.getElementById('status-modal');
 const statusLoading = document.getElementById('status-loading');
 const statusSuccess = document.getElementById('status-success');
@@ -133,6 +142,7 @@ const receiptNumberDisplay = document.getElementById('receipt-number');
 const failMessageDisplay = document.getElementById('fail-message');
 
 let currentCheckoutRequestID = null;
+let statusTimeout = null;
 
 payNowBtn.onclick = async () => {
     const name = userNameInput.value;
@@ -147,6 +157,14 @@ payNowBtn.onclick = async () => {
     mpesaModal.classList.add('hidden');
     showStatus('loading');
 
+    // Set a timeout to prevent being stuck in "Processing" state
+    clearTimeout(statusTimeout);
+    statusTimeout = setTimeout(() => {
+        if (!statusLoading.classList.contains('hidden')) {
+            showStatus('failed', 'Transaction timed out. We did not receive a response from M-Pesa in time. Please check your phone or try again.');
+        }
+    }, 65000); // 65 seconds timeout (M-Pesa typically takes 30-60s)
+
     try {
         const response = await fetch('/api/stkpush', {
             method: 'POST',
@@ -155,28 +173,40 @@ payNowBtn.onclick = async () => {
         });
 
         const data = await response.json();
+        console.log('STK Push Response:', data);
+
         if (data.ResponseCode === '0') {
             currentCheckoutRequestID = data.CheckoutRequestID;
-            console.log('STK Push initiated:', currentCheckoutRequestID);
+            console.log('STK Push successfully initiated. ID:', currentCheckoutRequestID);
         } else {
-            showStatus('failed', data.CustomerMessage || data.error || 'Failed to initiate STK Push');
+            clearTimeout(statusTimeout);
+            showStatus('failed', data.CustomerMessage || data.ErrorMessage || data.error || 'Failed to initiate STK Push');
         }
     } catch (error) {
-        showStatus('failed', 'Network error occurred');
+        clearTimeout(statusTimeout);
+        console.error('STK Push Fetch Error:', error);
+        showStatus('failed', 'Network error occurred while connecting to our server.');
     }
 };
 
 function showStatus(state, message = '') {
+    if (state !== 'loading') {
+        clearTimeout(statusTimeout);
+    }
+
     statusModal.classList.remove('hidden');
     statusLoading.classList.add('hidden');
     statusSuccess.classList.add('hidden');
     statusCancelled.classList.add('hidden');
     statusFailed.classList.add('hidden');
 
-    if (state === 'loading') statusLoading.classList.remove('hidden');
-    else if (state === 'success') statusSuccess.classList.remove('hidden');
-    else if (state === 'cancelled') statusCancelled.classList.remove('hidden');
-    else if (state === 'failed') {
+    if (state === 'loading') {
+        statusLoading.classList.remove('hidden');
+    } else if (state === 'success') {
+        statusSuccess.classList.remove('hidden');
+    } else if (state === 'cancelled') {
+        statusCancelled.classList.remove('hidden');
+    } else if (state === 'failed') {
         statusFailed.classList.remove('hidden');
         failMessageDisplay.innerText = message;
     }

@@ -94,3 +94,17 @@ PORT=3000
 4. Once the transaction is completed (Success/Failed/Cancelled), Safaricom sends a POST request to the `CALLBACK_URL`.
 5. The backend receives the callback and emits a `transaction-update` event via Socket.io to the frontend.
 6. The frontend updates the UI immediately to show the result.
+
+## Troubleshooting
+
+### Stuck on "Processing Transaction"
+If the app stays on "Processing Transaction" and then shows a timeout error:
+1. **Check Server Logs**: Ensure the backend received the callback from M-Pesa. You should see `--- M-Pesa Callback Received ---` in your terminal.
+2. **Check Ngrok**: Ensure your Ngrok tunnel is still active and the URL matches what's logged in the terminal.
+3. **M-Pesa Sandbox Delay**: M-Pesa Sandbox can sometimes be slow or fail to send callbacks. Try again after a few minutes.
+4. **Socket.io Connection**: Open your browser's Developer Tools (F12) and check the Console. You should see `Connected to server via WebSockets`. If there's a connection error, the frontend won't receive the status update.
+
+### "Invalid Access Token" or "404" Errors
+1. Double-check your `MPESA_CONSUMER_KEY` and `MPESA_CONSUMER_SECRET` in the `.env` file.
+2. Ensure `MPESA_ENV` is set correctly (`sandbox` for testing, `production` for live).
+3. Restart the server after any `.env` changes.
