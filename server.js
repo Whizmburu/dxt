@@ -27,10 +27,16 @@ io.on('connection', (socket) => {
   });
 });
 
+const getBaseUrl = () => {
+  return process.env.MPESA_ENV === 'production'
+    ? 'https://api.safaricom.co.ke'
+    : 'https://sandbox.safaricom.co.ke';
+};
+
 const getAccessToken = async () => {
-  const consumerKey = process.env.MPESA_CONSUMER_KEY;
-  const consumerSecret = process.env.MPESA_CONSUMER_SECRET;
-  const url = 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials';
+  const consumerKey = process.env.MPESA_CONSUMER_KEY?.trim();
+  const consumerSecret = process.env.MPESA_CONSUMER_SECRET?.trim();
+  const url = `${getBaseUrl()}/oauth/v1/generate?grant_type=client_credentials`;
   const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
 
   try {
@@ -51,7 +57,7 @@ app.post('/api/stkpush', async (req, res) => {
 
   try {
     const token = await getAccessToken();
-    const url = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
+    const url = `${getBaseUrl()}/mpesa/stkpush/v1/processrequest`;
     const timestamp = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14);
     const password = Buffer.from(`${process.env.MPESA_SHORTCODE}${process.env.MPESA_PASSKEY}${timestamp}`).toString('base64');
 
@@ -76,12 +82,12 @@ app.post('/api/stkpush', async (req, res) => {
 
     const response = await axios.post(url, data, {
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${token.trim()}`,
       },
     });
     res.status(200).json(response.data);
   } catch (error) {
-    console.error('STK Push error:', error.response ? error.response.data : error.message);
+    console.error('STK Push error:', JSON.stringify(error.response ? error.response.data : error.message, null, 2));
     res.status(500).json({ error: error.response ? error.response.data : error.message });
   }
 });

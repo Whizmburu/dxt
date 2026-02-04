@@ -33,6 +33,11 @@ Whizpoint Solutions is a modern, service-based web application that features a s
 - M-Pesa Daraja API credentials (Consumer Key, Consumer Secret, Passkey, Shortcode).
 - Ngrok Authtoken (Optional but recommended for local testing).
 
+### Important Note on Ngrok (Free Tier)
+When using a free Ngrok account, visitors may see a browser warning page ("You are about to visit...").
+- **For the Web App**: Simply click **"Visit Site"** to proceed. This warning only appears once per browser. Alternatively, you can add the `ngrok-skip-browser-warning: any-value` header to your requests.
+- **For M-Pesa Callbacks**: Ngrok typically allows POST requests (which M-Pesa uses for callbacks) to pass through without the warning page. If you encounter issues, consider a paid Ngrok plan or using a different tunneling service.
+
 ## Getting Started
 
 1. **Clone the repository**:
@@ -63,6 +68,9 @@ Whizpoint Solutions is a modern, service-based web application that features a s
 Create a `.env` file with the following content:
 
 ```env
+# M-Pesa Environment (sandbox or production)
+MPESA_ENV=sandbox
+
 # M-Pesa Daraja API Credentials
 MPESA_CONSUMER_KEY=your_actual_consumer_key_here
 MPESA_CONSUMER_SECRET=your_actual_consumer_secret_here
