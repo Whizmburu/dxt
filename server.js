@@ -156,12 +156,8 @@ server.listen(PORT, async () => {
   if (process.env.NGROK_AUTHTOKEN) {
     try {
       console.log('Establishing Ngrok tunnel...');
-      const session = await new ngrok.SessionBuilder()
-        .authtoken(process.env.NGROK_AUTHTOKEN.trim())
-        .connect();
-      const tunnel = await session.httpEndpoint()
-        .forward(`localhost:${PORT}`)
-        .listen();
+      await ngrok.authtoken(process.env.NGROK_AUTHTOKEN.trim());
+      const tunnel = await ngrok.forward(PORT);
       const url = tunnel.url();
       console.log(`Ngrok Tunnel: ${url}`);
       process.env.CALLBACK_URL = url;
