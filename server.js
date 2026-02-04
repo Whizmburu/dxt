@@ -128,13 +128,13 @@ app.post('/api/callback', (req, res) => {
       message = 'Transaction Cancelled by User.';
     }
 
-    console.log(`Broadcasting update: ${status} for ID: ${checkoutRequestID}`);
+    console.log(`[Callback] Success! Broadcasting update: ${status} for ID: ${checkoutRequestID}`);
 
     io.emit('transaction-update', {
-      checkoutRequestID,
-      status,
-      message,
-      receiptNumber
+      checkoutRequestID: checkoutRequestID,
+      status: status,
+      message: message,
+      receiptNumber: receiptNumber
     });
 
     res.status(200).json({ ResultCode: 0, ResultDesc: 'Success' });

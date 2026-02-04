@@ -176,9 +176,9 @@ payNowBtn.onclick = async () => {
     clearTimeout(statusTimeout);
     statusTimeout = setTimeout(() => {
         if (!statusLoading.classList.contains('hidden')) {
-            showStatus('failed', 'Transaction timed out. We did not receive a response from M-Pesa in time. Please check your phone or try again.');
+            showStatus('failed', 'Transaction timed out. We did not receive a response from M-Pesa in time. Please ensure you entered your PIN or try again if the prompt did not appear.');
         }
-    }, 65000); // 65 seconds timeout (M-Pesa typically takes 30-60s)
+    }, 120000); // 120 seconds timeout (increased for better reliability)
 
     try {
         const response = await fetch('/api/stkpush', {
@@ -239,6 +239,8 @@ cancelLoadingBtn.onclick = () => {
 
 socket.on('transaction-update', (data) => {
     console.log('Transaction update received:', data);
+    console.log('Comparing:', data.checkoutRequestID, 'with', currentCheckoutRequestID);
+
     if (data.checkoutRequestID === currentCheckoutRequestID) {
         if (data.status === 'success') {
             receiptNumberDisplay.innerText = data.receiptNumber;
